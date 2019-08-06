@@ -64,32 +64,26 @@ mongo.connect(process.env.DATABASE, (err, db) => {
       },
       function(accessToken, refreshToken, profile, cb) {
         console.log(profile);
-        db.collection('socialusers').findAndModify({
-          query: {id: profile.id},
-          sort: {},
-          update: {
-            $setOnInsert:{
+        db.collection('socialusers').findAndModify(
+          {id: profile.id},
+          {},
+          {$setOnInsert:{
               id: profile.id,
               name: profile.displayName || 'John Doe',
               photo: profile.photos[0].value || '',
-              email: profile.emails[0].value || 'No public email',
+              email: profile.email || 'No public email',
               created_on: new Date(),
               provider: profile.provider || ''
-            }, $set:{
+          },$set:{
               last_login: new Date()
-            }, $inc:{
+          },$inc:{
               login_count: 1
-            }
-          }, 
-          upsert: true, 
-          new: true,
-          
-        },
-        (err, doc) => {
-          return cb(null, doc.value);
-        }
-        
-        )
+          }},
+          {upsert:true, new: true},
+          (err, doc) => {
+              return cb(null, doc.value);
+          }
+      );
       }
       ));
       
